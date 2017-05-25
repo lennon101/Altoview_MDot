@@ -76,6 +76,7 @@ class AltoviewMDot
     int8_t ping();                                //Uses getSnr() and getRssi(), returns 0 if variables saved, returns -1 if either fncs failed 
     int8_t getSnr();                              //Gets SNR using AT command, returns 0 if variable saved, returns -1 if failed 
     int8_t getRssi();                             //Gets RSSI using AT command, returns 0 if variable saved, returns -1 if failed 
+    int8_t sleep();                               //Sleeps the mDot to deep-sleep mode
 
     int8_t setDefaults();
     int8_t setFrequencySubBand(char);

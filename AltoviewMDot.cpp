@@ -17,13 +17,13 @@
  ***********************************************************************************/
 #include "AltoviewMDot.h"
 
-//#define DEBUG                                 // uncomment to print debug information
+#define DEBUG                                 // uncomment to print debug information
 
 const char command_00[]  PROGMEM = "AT+FSB ";
 const char command_01[]  PROGMEM = "AT+PN ";
 const char command_02[]  PROGMEM = "AT+NI 0,";
 const char command_03[]  PROGMEM = "AT+NK 0,";
-const char command_04[]  PROGMEM = ""; //vacant
+const char command_04[]  PROGMEM = "AT+SLEEP=0";
 const char command_05[]  PROGMEM = "AT+JOIN";
 const char command_06[]  PROGMEM = "AT+SEND ";
 const char command_07[]  PROGMEM = "AT+SNR";
@@ -43,9 +43,9 @@ const char command_20[]  PROGMEM = "AT+NSK?";
 const char command_21[]  PROGMEM = "AT+DSK?";
 const char command_22[]  PROGMEM = "AT&W";
 
-const char* const table_LoRaWAN_COMMANDS[] PROGMEM=     
-{   
-  command_00, 
+const char* const table_LoRaWAN_COMMANDS[] PROGMEM =
+{
+  command_00,
   command_01,
   command_02,
   command_03,
@@ -73,9 +73,9 @@ const char* const table_LoRaWAN_COMMANDS[] PROGMEM=
 const char answer_00[] PROGMEM = "OK";
 const char answer_01[] PROGMEM = "BUG";
 
-const char* const table_LoRaWAN_ANSWERS[] PROGMEM=    
-{   
-  answer_00, 
+const char* const table_LoRaWAN_ANSWERS[] PROGMEM =
+{
+  answer_00,
   answer_01
 };
 
@@ -83,8 +83,8 @@ const char* const table_LoRaWAN_ANSWERS[] PROGMEM=
 const char key_NetworkKey[]   PROGMEM = "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:01";
 const char key_NetworkId[]    PROGMEM = "00:00:aa:00:00:00:00:01";
 
-const char* const table_LoRaWAN_KEYS[] PROGMEM=     
-{   
+const char* const table_LoRaWAN_KEYS[] PROGMEM =
+{
   key_NetworkId,
   key_NetworkKey
 };
@@ -93,27 +93,27 @@ const char* const table_LoRaWAN_KEYS[] PROGMEM=
  *                               PUBLIC FUNCTIONS                                   *
  ***********************************************************************************/
 
- /*----------------------------------------------------------------------------------|
-  | CONSTRUCTOR: Creates class object using a specified serial port.                 |                             |
-  -----------------------------------------------------------------------------------*/
-  AltoviewMDot::AltoviewMDot(AltSoftSerial* mdot_serial) {
-    //TODO: Input checking, what range of values to accept, how to handle invalid input
-    //_u8SerialPort = mdot_serial;       //legacy 
-    _mdot_serial = mdot_serial; 
-  }
+/*----------------------------------------------------------------------------------|
+ | CONSTRUCTOR: Creates class object using a specified serial port.                 |                             |
+ -----------------------------------------------------------------------------------*/
+AltoviewMDot::AltoviewMDot(AltSoftSerial* mdot_serial) {
+  //TODO: Input checking, what range of values to accept, how to handle invalid input
+  //_u8SerialPort = mdot_serial;       //legacy
+  _mdot_serial = mdot_serial;
+}
 
 
-	/*----------------------------------------------------------------------------------|
-	| CONSTRUCTOR: Creates class object using a specified serial port, and passing it a |
-	| specified debug stream. This stream can be used to pass debug info to a serial    |
-	| port, either hardware serial or software serial.                                  |
-	-----------------------------------------------------------------------------------*/
-	AltoviewMDot::AltoviewMDot(AltSoftSerial* mdot_serial, HardwareSerial* debug_serial) {
-	  //TODO: Input checking, what range of values to accept, how to handle invalid input
-	  //_u8SerialPort = mdot_serial;       //legacy 
-		_debug_serial = debug_serial;
-		_mdot_serial = mdot_serial; 
-	}
+/*----------------------------------------------------------------------------------|
+| CONSTRUCTOR: Creates class object using a specified serial port, and passing it a |
+| specified debug stream. This stream can be used to pass debug info to a serial    |
+| port, either hardware serial or software serial.                                  |
+-----------------------------------------------------------------------------------*/
+AltoviewMDot::AltoviewMDot(AltSoftSerial* mdot_serial, HardwareSerial* debug_serial) {
+  //TODO: Input checking, what range of values to accept, how to handle invalid input
+  //_u8SerialPort = mdot_serial;       //legacy
+  _debug_serial = debug_serial;
+  _mdot_serial = mdot_serial;
+}
 
 
 /*----------------------------------------------------------------------------------|
@@ -142,8 +142,8 @@ int8_t AltoviewMDot::_sendCommand(char* command, char* answer1, char* ans2, uint
 
 // char** AltoviewMDot::compileResp(char* ans)
 // {
-//     if (answer1 != NULL && 
-//         strstr(_response, answer1) != '\0' && 
+//     if (answer1 != NULL &&
+//         strstr(_response, answer1) != '\0' &&
 //         (resp != NULL) {
 //         *resp = strstr(_response,command);
 //         *resp += strlen(command);
@@ -169,17 +169,17 @@ int8_t AltoviewMDot::_sendCommand(char* command, char* answer1, char* ans2, uint
 -----------------------------------------------------------------------------------*/
 int8_t AltoviewMDot::_sendCommand(char* command, char* ans1, char* ans2, uint16_t timeout, char** resp)  {
   ///_debug_serial->println(F("LaT:sc: enter"));
-  static const char TERMINATOR[3] = {'\r','\n','\0'};
+  static const char TERMINATOR[3] = {'\r', '\n', '\0'};
 
   uint32_t maxEndTime = 0;
 
   //flush receive buffer before transmitting request
-  delay(20);                                     				//Undesirable delay, if we read/write too quick to the mDot,  timing issues arise.
+  delay(20);                                            //Undesirable delay, if we read/write too quick to the mDot,  timing issues arise.
   while (_mdot_serial->read() != -1);
-  delay(20);                                     				//Undesirable delay, if we read/write too quick to the mDot,  timing issues arise.
+  delay(20);                                            //Undesirable delay, if we read/write too quick to the mDot,  timing issues arise.
 
-  memset(_response,0x00,_MAX_MDOT_RESPONSE);					  //Blank string
-  _length = 0;                                          //_length = length of response 
+  memset(_response, 0x00, _MAX_MDOT_RESPONSE);          //Blank string
+  _length = 0;                                          //_length = length of response
 
 #ifdef DEBUG
   //Send command
@@ -188,21 +188,21 @@ int8_t AltoviewMDot::_sendCommand(char* command, char* ans1, char* ans2, uint16_
   _debug_serial->print(command);
   _debug_serial->print(TERMINATOR);
 #endif
-  
+
   _mdot_serial->print(command);
   _mdot_serial->print(TERMINATOR);
 
-  maxEndTime = millis() + timeout;								      //Set timeout time (timeout is passed as arg to this fnc)
+  maxEndTime = millis() + timeout;                      //Set timeout time (timeout is passed as arg to this fnc)
 
-  //While something is available get it
+  /*----------  While something is available get it  ----------*/
   //_debug_serial->println(F("LaT:sc: Loop collecting response"));
   *resp = NULL;
 
   int availableCount = 0;                               // availableCount = number of available bytes to read from mDot
-  int tempRet = -1;                                     //tempRet = 
+  int tempRet = -1;                                     //tempRet =
   do {
     availableCount = _mdot_serial->available();
-    if (availableCount != 0) {							            //available() is a method of the serial class showing number of available bytes to read. 
+    if (availableCount != 0) {                          //available() is a method of the serial class showing number of available bytes to read.
       //_debug_serial->print("[");
       //_debug_serial->print(availableCount);
       //_debug_serial->print("]");
@@ -210,7 +210,7 @@ int8_t AltoviewMDot::_sendCommand(char* command, char* ans1, char* ans2, uint16_
         _response[_length++] = _mdot_serial->read();
         //_debug_serial->write(_response[_length-1]);
         //_debug_serial->println();
-        _response[_length] = '\0';               				//Ensure response buffer is null terminated (nb: this is overwritten in the next loop if there is still something available on the buffer)
+        _response[_length] = '\0';                      //Ensure response buffer is null terminated (nb: this is overwritten in the next loop if there is still something available on the buffer)
       }
 
       if (ans1 != NULL && strstr(_response, ans1) != '\0') {
@@ -225,28 +225,28 @@ int8_t AltoviewMDot::_sendCommand(char* command, char* ans1, char* ans2, uint16_
     }
   } while (millis() <= maxEndTime);
 
-  #ifdef DEBUG
-    _debug_serial->println();
-    _debug_serial->print(F("LaT:sc:_response: "));
-    _debug_serial->println(_response);
-    
-    //_debug_serial->print(F("LaT:sc: length: "));
-    //_debug_serial->println(_length);
-  #endif
+#ifdef DEBUG
+  _debug_serial->println();
+  _debug_serial->print(F("LaT:sc:_response: "));
+  _debug_serial->println(_response);
+
+  //_debug_serial->print(F("LaT:sc: length: "));
+  //_debug_serial->println(_length);
+#endif
 
   if (resp != NULL && tempRet != -1) {
-    *resp = strstr(_response,command);
+    *resp = strstr(_response, command);
     *resp += strlen(command);
     *resp += sizeof(TERMINATOR);
   }
 
   if (tempRet == -1)
   {
-    #ifdef DEBUG
-      _debug_serial->println(F("LaT:sc: Timed out"));
-    #endif
+#ifdef DEBUG
+    _debug_serial->println(F("LaT:sc: Timed out"));
+#endif
   }
-  
+
   return (tempRet);
 }
 
@@ -260,7 +260,7 @@ int8_t AltoviewMDot::_sendCommand(char* command, char* ans1, char* ans2, uint16_
 |  -1 - Timeout error                                                               |
 -----------------------------------------------------------------------------------*/
 int8_t AltoviewMDot::join() {
-  return(join(10000));
+  return (join(10000));
 }
 
 /*----------------------------------------------------------------------------------|
@@ -277,19 +277,19 @@ int8_t AltoviewMDot::join(uint16_t timeout) {
   ///_debug_serial->println(F("LaT:j : enter"));
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
 
   // sprintf_P(_command,(char*)F("AT+JOIN"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[5]))); 
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[5])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
-  ansCode = _sendCommand(_command, answer1,NULL,timeout);
+  ansCode = _sendCommand(_command, answer1, NULL, timeout);
   if (ansCode < 0 ) {
-    return(-1);
+    return (-1);
   }
 
-  return(0);
+  return (0);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -305,7 +305,7 @@ void AltoviewMDot::leave() {
 -----------------------------------------------------------------------------------*/
 int8_t AltoviewMDot::send(char* message) {
   ///_debug_serial->println(F("LaT:s : enter, w/ default timeout"));
-  return(send(message,10000));
+  return (send(message, 10000));
 }
 
 /*----------------------------------------------------------------------------------|
@@ -318,7 +318,7 @@ int8_t AltoviewMDot::send(char* message, uint16_t timeout) {
 
   l = sizeof(_command);                     //Will only send char array up to null, or l (max size of _command buffer)
 
-  return(send(message,l,10000));
+  return (send(message, l, 10000));
 }
 
 /*----------------------------------------------------------------------------------|
@@ -329,92 +329,117 @@ int8_t AltoviewMDot::send(char* message, uint8_t length, uint16_t timeout) {
   ///_debug_serial->println(F("LaT:s : enter"));
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
 
   // sprintf_P(_command,(char*)F("AT+SEND "));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[6])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
-  strncat(_command,message,length);              //Append message to command
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[6])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+  strncat(_command, message, length);            //Append message to command
 
-  ansCode = _sendCommand(_command, answer1,NULL,timeout);
+  ansCode = _sendCommand(_command, answer1, NULL, timeout);
 
   if (ansCode == 1) {
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
 | Gets the RSSI and SNR using their AT commands. Saves them to public variables.    |
 -----------------------------------------------------------------------------------*/
 int8_t AltoviewMDot::ping() {
-	int8_t ansCode1;
-	int8_t ansCode2;
+  int8_t ansCode1;
+  int8_t ansCode2;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
-	char* r;
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
+  char* r;
 
-  	ansCode1 = getSnr(); 
-  	ansCode2 = getRssi(); 
+  ansCode1 = getSnr();
+  ansCode2 = getRssi();
 
   if (ansCode1 == 1 && ansCode2 == 1) {
-      return (0);
-    }
-  return(-1);
+    return (0);
+  }
+  return (-1);
 }
 
 int8_t AltoviewMDot::getSnr() {
   //_debug_serial->println(F("LaT:snr:"));
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char* r;
-  char temp[5];									//variable to store potential length snr of latest packet 
+  char temp[5];                 //variable to store potential length snr of latest packet
 
   // sprintf_P(_command,(char*)F("AT+SNR"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[7])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
-  ansCode = _sendCommand(_command, answer1,NULL,10000, &r);
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[7])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
 
   if (ansCode == 1) {
-    //strncpy(snr,r,(sizeof(snr)-1)); 
-  	sprintf(temp, "%.5s",r);					//get the first 5 values from the response array				
-  	snr = (float)atof(temp);					//use atoi to cast char array to uint16 and strip ' ' or ','
+    //strncpy(snr,r,(sizeof(snr)-1));
+    sprintf(temp, "%.5s", r);         //get the first 5 values from the response array
+    snr = (float)atof(temp);          //use atoi to cast char array to uint16 and strip ' ' or ','
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 int8_t AltoviewMDot::getRssi() {
   //_debug_serial->println(F("LaT:rssi:"));
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char* r;
-  char temp[4];									//variable to store potential length rssi of latest packet 
+  char temp[4];                 //variable to store potential length rssi of latest packet
 
   // sprintf_P(_command,(char*)F("AT+RSSI"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[8])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[8])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000, &r);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
 
   if (ansCode == 1) {
-    //strncpy(snr,r,(sizeof(snr)-1)); 
-  	sprintf(temp, "%.4s",r);					//get the first 4 values from the response array				
-  	rssi = (int16_t)atof(temp);					//use atoi to cast char array to uint16 and strip ' ' or ','
+    //strncpy(snr,r,(sizeof(snr)-1));
+    sprintf(temp, "%.4s", r);         //get the first 4 values from the response array
+    rssi = (int16_t)atof(temp);         //use atoi to cast char array to uint16 and strip ' ' or ','
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
+/*----------------------------------------------------------------------------------|
+| Sleep the mDot. Depending on the firmware settings, the mdot will awake at a      |
+| chosen interval or via a chosen interrupt pin. Refer to documentation for more    |
+| info                                                                              |
+-----------------------------------------------------------------------------------*/
+int8_t AltoviewMDot::sleep() {
+#ifdef DEBUG
+  _debug_serial->println(F("LaT:sleep:"));
+#endif
+  char* r;                                                                        //r=entire response collected from mdot
+  int8_t ansCode;
+  char answer1[5];                                                                // Potential size of answer is 5 chars
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
+
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[4])));        // AT+SLEEP=0 --> deep sleep
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
+
+  if (ansCode == 1) {
+    return (0);
+  }
+  return (-1);
+}
 
 
 /*----------------------------------------------------------------------------------|
@@ -425,7 +450,7 @@ int8_t AltoviewMDot::getRssi() {
 | 3. The _txBuffer is processed (sent).                                             |
 -----------------------------------------------------------------------------------*/
 int8_t AltoviewMDot::sendPairs(String pairs) {
-  return(sendPairs(&pairs));
+  return (sendPairs(&pairs));
 }
 
 /*----------------------------------------------------------------------------------|
@@ -439,8 +464,8 @@ int8_t AltoviewMDot::sendPairs(String* pairs) {
   ///_debug_serial->println(F("LaT:sp: enter"));
   char pairsC[_MAX_PAIRS_SIZE];
   pairs->toCharArray(pairsC, _MAX_PAIRS_SIZE);
-  pairsC[_MAX_PAIRS_SIZE-1] = '\0';
-  return(sendPairs(pairsC));
+  pairsC[_MAX_PAIRS_SIZE - 1] = '\0';
+  return (sendPairs(pairsC));
 }
 
 /*----------------------------------------------------------------------------------|
@@ -459,7 +484,7 @@ int8_t AltoviewMDot::sendPairs(char* pairs) {
 #endif
   //String json;
   char json[_MAX_PAIRS_SIZE];
-  memcpy(json,0x00,_MAX_PAIRS_SIZE);
+  memcpy(json, 0x00, _MAX_PAIRS_SIZE);
 
   //TODO: Check the string is actually pairs
 
@@ -475,7 +500,7 @@ int8_t AltoviewMDot::sendPairs(char* pairs) {
   _createFragmentBuffer(json);
   ///_debug_serial->println(F("LaT:sp: process buffer"));
 
-  return(_processBuffer());
+  return (_processBuffer());
 }
 
 /*----------------------------------------------------------------------------------|
@@ -491,38 +516,38 @@ void AltoviewMDot::_pairsToJSON(char* json, uint8_t jsonLength, char* pairs) {
   char* jsonPtr;                                 //Points to the next free location
   uint8_t len = strlen(pairs);                   //Counts to the null terminator
 
-  static const char JSON_BEGIN[2] = {'{','\"'};
-  static const char JSON_STR_VAL[2] = {'\"',':'};
-  static const char JSON_PAIR_PAIR[2] = {',','\"'};
-  static const char JSON_END[2] = {'}','\0'};
+  static const char JSON_BEGIN[2] = {'{', '\"'};
+  static const char JSON_STR_VAL[2] = {'\"', ':'};
+  static const char JSON_PAIR_PAIR[2] = {',', '\"'};
+  static const char JSON_END[2] = {'}', '\0'};
 
   //Set the pointer to beginning of JSON
   jsonPtr = json;
 
   // Adds the first { and "
-  memcpy(jsonPtr,JSON_BEGIN,sizeof(JSON_BEGIN));
+  memcpy(jsonPtr, JSON_BEGIN, sizeof(JSON_BEGIN));
   jsonPtr += sizeof(JSON_BEGIN);
 
   //Loop through each of the characters, when getting to a delimiter, act accordingly
   for (uint8_t j = 0; j < len && (jsonPtr - json + sizeof(JSON_END)) < jsonLength; j++) {
     char c = pairs[j];
     switch (c) {
-      case ':':
-        if (jsonPtr - json + sizeof(JSON_STR_VAL) < jsonLength) {
-          memcpy(jsonPtr,JSON_STR_VAL,sizeof(JSON_STR_VAL));
-          jsonPtr += sizeof(JSON_STR_VAL);
-        }
-        break;
-      case ',':
-        if (jsonPtr - json + sizeof(JSON_PAIR_PAIR) < jsonLength) {
-          memcpy(jsonPtr,JSON_PAIR_PAIR,sizeof(JSON_PAIR_PAIR));
-          jsonPtr += sizeof(JSON_PAIR_PAIR);
-        }
-        break;
-      default:
-        if ((jsonPtr - json) < jsonLength) {
-          *jsonPtr++ = c;
-        }
+    case ':':
+      if (jsonPtr - json + sizeof(JSON_STR_VAL) < jsonLength) {
+        memcpy(jsonPtr, JSON_STR_VAL, sizeof(JSON_STR_VAL));
+        jsonPtr += sizeof(JSON_STR_VAL);
+      }
+      break;
+    case ',':
+      if (jsonPtr - json + sizeof(JSON_PAIR_PAIR) < jsonLength) {
+        memcpy(jsonPtr, JSON_PAIR_PAIR, sizeof(JSON_PAIR_PAIR));
+        jsonPtr += sizeof(JSON_PAIR_PAIR);
+      }
+      break;
+    default:
+      if ((jsonPtr - json) < jsonLength) {
+        *jsonPtr++ = c;
+      }
     }
   }
 
@@ -535,7 +560,7 @@ void AltoviewMDot::_pairsToJSON(char* json, uint8_t jsonLength, char* pairs) {
     }
   }
 
-  memcpy(jsonPtr,JSON_END,sizeof(JSON_END));
+  memcpy(jsonPtr, JSON_END, sizeof(JSON_END));
   jsonPtr += sizeof(JSON_END);
 
   ///_debug_serial->println(F("LaT:pj: exit"));
@@ -555,10 +580,10 @@ void AltoviewMDot::_createFragmentBuffer(char* message) {
 
   uint8_t strLength = strlen(message);            //Counts to the null terminator
   //Calculate the number of fragments required for this message
-  uint8_t numFragments = strLength/_PAYLOAD_SIZE;
+  uint8_t numFragments = strLength / _PAYLOAD_SIZE;
 
   //Make sure we round up
-  if (_PAYLOAD_SIZE*numFragments < strLength) {
+  if (_PAYLOAD_SIZE * numFragments < strLength) {
     numFragments += 1;
   }
 
@@ -629,26 +654,34 @@ int8_t AltoviewMDot::_processBuffer() {
   char* txGtr = (char*)_txBuffer;                //Pointer to where in the buffer we're up to
   uint8_t length = 0;                            //Number of bytes to send from buffer
   uint8_t buffLength = _txPutter * _PACKET_SIZE; //Number of bytes in _txBuffer
-  int8_t result = -1;
+  int8_t result = 0;
+
+  /**
+  
+    TODO:
+    - write code to send the high water mark (if the result was ever equal to anything other than zero)
+    - Second todo item
+  
+   */
 
   while (txGtr < (char*)_txBuffer + buffLength) {
     getDataRate();                               //Update data rate public member
     switch (dataRate) {
-      case 4:
-        length = floor(_DR4_PAYLOAD_USAGE/_PACKET_SIZE) * _PACKET_SIZE;
-        break;
-      case 3:
-        length = floor(_DR3_PAYLOAD_USAGE/_PACKET_SIZE) * _PACKET_SIZE;
-        break;
-      case 2:
-        length = floor(_DR2_PAYLOAD_USAGE/_PACKET_SIZE) * _PACKET_SIZE;
-        break;
-      case 1:
-        length = floor(_DR1_PAYLOAD_USAGE/_PACKET_SIZE) * _PACKET_SIZE;
-        break;
-      case 0:
-      default:
-        length = floor(_DR0_PAYLOAD_USAGE/_PACKET_SIZE) * _PACKET_SIZE;
+    case 4:
+      length = floor(_DR4_PAYLOAD_USAGE / _PACKET_SIZE) * _PACKET_SIZE;
+      break;
+    case 3:
+      length = floor(_DR3_PAYLOAD_USAGE / _PACKET_SIZE) * _PACKET_SIZE;
+      break;
+    case 2:
+      length = floor(_DR2_PAYLOAD_USAGE / _PACKET_SIZE) * _PACKET_SIZE;
+      break;
+    case 1:
+      length = floor(_DR1_PAYLOAD_USAGE / _PACKET_SIZE) * _PACKET_SIZE;
+      break;
+    case 0:
+    default:
+      length = floor(_DR0_PAYLOAD_USAGE / _PACKET_SIZE) * _PACKET_SIZE;
     }
 
     //Ensure the program doesn't read past the allocated memory
@@ -660,12 +693,12 @@ int8_t AltoviewMDot::_processBuffer() {
     //_debug_serial->print(dataRate);
     //_debug_serial->print(F(", length: "));
     //_debug_serial->println(String(length));
-    result = send(txGtr,length,10000);
+    result += send(txGtr, length, 10000);
 
     txGtr += length;
   }
 
-  return(0);
+  return (result);      // result should be 0 if send() never failed otherwise it will be any Real number < 0
 }
 
 /*----------------------------------------------------------------------------------|
@@ -679,7 +712,7 @@ int8_t AltoviewMDot::setDefaults() {
   char id[sizeof(key_NetworkId)];
   char key[sizeof(key_NetworkKey)];
   sprintf_P(id, (char*)pgm_read_word(&(table_LoRaWAN_KEYS[0])));
-  sprintf_P(key,(char*)pgm_read_word(&(table_LoRaWAN_KEYS[1])));
+  sprintf_P(key, (char*)pgm_read_word(&(table_LoRaWAN_KEYS[1])));
 
   if (setFrequencySubBand('1') == 0) {
     result = 0;
@@ -702,7 +735,7 @@ int8_t AltoviewMDot::setDefaults() {
 
   commitSettings();
 
-  return(result);
+  return (result);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -714,19 +747,19 @@ int8_t AltoviewMDot::setDefaults() {
 int8_t AltoviewMDot::setFrequencySubBand(char fsb) {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
 
 
   // sprintf_P(_command,(char*)F("AT+FSB "));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[0])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[0])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
 
   _command[7] = fsb;
   _command[8] = '\0';
 
-  ansCode = _sendCommand(_command,answer1,NULL,10000);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000);
   ///_debug_serial->println(_response);
 
   if (ansCode == 1) {
@@ -734,7 +767,7 @@ int8_t AltoviewMDot::setFrequencySubBand(char fsb) {
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -743,22 +776,22 @@ int8_t AltoviewMDot::setFrequencySubBand(char fsb) {
 int8_t AltoviewMDot::getFrequencySubBand() {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char* r;
 
   // sprintf_P(_command,(char*)F("AT+FSB?"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[9])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[9])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000, &r);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
 
   if (ansCode == 1) {
     frequencySubBand = r[0];
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -772,26 +805,26 @@ int8_t AltoviewMDot::getFrequencySubBand() {
 int8_t AltoviewMDot::setPublicNetwork(char pn) {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
 
   // sprintf_P(_command,(char*)F("AT+PN "));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[1])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[1])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
   if (pn != '0') {
     pn = '1';
   }
   _command[6] = pn;
   _command[7] = '\0';
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000);
 
   if (ansCode == 1) {
     publicNetwork = pn;
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -800,22 +833,22 @@ int8_t AltoviewMDot::setPublicNetwork(char pn) {
 int8_t AltoviewMDot::getPublicNetwork() {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char* r;
 
   // sprintf_P(_command,(char*)F("AT+PN?"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[10])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[10])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000, &r);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
 
   if (ansCode == 1) {
     publicNetwork = r[0];
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -831,23 +864,23 @@ int8_t AltoviewMDot::getPublicNetwork() {
 int8_t AltoviewMDot::setNetworkID(char* id) {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
 
   // sprintf_P(_command,(char*)F("AT+NI 0,"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[2])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
-  strcat(_command,id);                           //Append ID to command
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[2])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+  strcat(_command, id);                          //Append ID to command
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000);
 
   if (ansCode == 1) {
-    strncpy(networkId,id,sizeof(networkId)-1);
-    networkId[(sizeof(networkId)-1)] = '\0';
+    strncpy(networkId, id, sizeof(networkId) - 1);
+    networkId[(sizeof(networkId) - 1)] = '\0';
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -856,23 +889,23 @@ int8_t AltoviewMDot::setNetworkID(char* id) {
 int8_t AltoviewMDot::getNetworkID() {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char* r;
 
   // sprintf_P(_command,(char*)F("AT+NI?"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[11])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[11])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000, &r);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
 
   if (ansCode == 1) {
-    strncpy(networkId,r,(sizeof(networkId)-1));
-    networkId[(sizeof(networkId)-1)] = '\0';
+    strncpy(networkId, r, (sizeof(networkId) - 1));
+    networkId[(sizeof(networkId) - 1)] = '\0';
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -888,30 +921,30 @@ int8_t AltoviewMDot::getNetworkID() {
 int8_t AltoviewMDot::setNetworkKey(char* key) {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char answerX[5];
-  memset(answerX,0x00,sizeof(answerX));
+  memset(answerX, 0x00, sizeof(answerX));
 
   // sprintf_P(_command,(char*)F("AT+NK 0,"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[3])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
-  sprintf_P(answerX,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[1]))); 
-  strcat(_command,key);                          //Append key to command
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[3])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+  sprintf_P(answerX, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[1])));
+  strcat(_command, key);                         //Append key to command
   // strcat(_command,keyz);                          //Append key to command
 
   // sprintf_P(keyz,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[5])));
   // strcat(_command,keyz);                          //Append key to command
 
-  ansCode = _sendCommand(_command, answer1, answerX,10000);
+  ansCode = _sendCommand(_command, answer1, answerX, 10000);
 
   if (ansCode == 1) {
-    strncpy(networkKey,key,sizeof(networkKey)-1);
-    networkKey[(sizeof(networkKey)-1)] = '\0';
+    strncpy(networkKey, key, sizeof(networkKey) - 1);
+    networkKey[(sizeof(networkKey) - 1)] = '\0';
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -920,26 +953,26 @@ int8_t AltoviewMDot::setNetworkKey(char* key) {
 int8_t AltoviewMDot::getNetworkKey() {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char answerX[5];
-  memset(answerX,0x00,sizeof(answerX));
+  memset(answerX, 0x00, sizeof(answerX));
   char* r;
 
   // sprintf_P(_command,(char*)F("AT+NK?"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[12])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
-  sprintf_P(answerX,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[1]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[12])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+  sprintf_P(answerX, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[1])));
 
-  ansCode = _sendCommand(_command, answer1, answerX,10000, &r);
+  ansCode = _sendCommand(_command, answer1, answerX, 10000, &r);
 
   if (ansCode == 1) {
-    strncpy(networkKey,r,(sizeof(networkKey)-1));
-    networkKey[(sizeof(networkKey)-1)] = '\0';
+    strncpy(networkKey, r, (sizeof(networkKey) - 1));
+    networkKey[(sizeof(networkKey) - 1)] = '\0';
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -947,80 +980,80 @@ int8_t AltoviewMDot::getNetworkKey() {
 |                                                                                   |
 | AT+TXDR ?                                                                         |
 | AT+TXDR: (0-3|10-7|DR0-DR4|DR8-DR13)                                              |
-|																					                                          |
+|                                                                                   |
 -----------------------------------------------------------------------------------*/
 int8_t AltoviewMDot::setDataRate(char txdr) {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
 
   // sprintf_P(_command,(char*)F("AT+TXDR"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[13])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[13])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
   _command[8] = txdr;
   _command[9] = '\0';
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000);
 
   if (ansCode == 1) {
     dataRate = (uint8_t)txdr;
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------
-| Sets the data rate                                                                
-|                                                                                   
-| AT+TXDR ?                                                                         
-| AT+TXDR: (DR0-DR4|DR8-DR13) 														                          
-|																					                                          
-| Eg:                                                                               
-|         |----------|----------|----------|                              
-|					| DataRate | Config   | Bit rate |								
-|					|----------|----------|----------|								
-|					| 	DR0    |SF10BW125 |   980    |								
-|					| 	DR1    |SF09BW125 |  1760    |								
-|					| 	DR2    |SF08BW125 |  3125    |								
-|					| 	DR3    |SF07BW125 |  5470    |								
-|					| 	DR4    |SF08BW500 | 12500    |								
-|					| DR5:DR7  | Not Used |          |								
-|					| 	DR8    |SF12BW500 |   980    |								
-|					| 	DR9    |SF11BW500 |  1760    |							
-|					|   DR10   |SF10BW500 |  3900    |						
-|					| 	DR11   |SF09BW500 |  7000    |								
-|					| 	DR12   |SF08BW500 | 12500    |								
-|					| 	DR13   |SF07BW500 | 21900    |								
-|					| DR14:DR15| Not Used |          |								
-|         |----------|----------|----------|                              
-|																					
-|																					
+| Sets the data rate
+|
+| AT+TXDR ?
+| AT+TXDR: (DR0-DR4|DR8-DR13)
+|
+| Eg:
+|         |----------|----------|----------|
+|         | DataRate | Config   | Bit rate |
+|         |----------|----------|----------|
+|         |   DR0    |SF10BW125 |   980    |
+|         |   DR1    |SF09BW125 |  1760    |
+|         |   DR2    |SF08BW125 |  3125    |
+|         |   DR3    |SF07BW125 |  5470    |
+|         |   DR4    |SF08BW500 | 12500    |
+|         | DR5:DR7  | Not Used |          |
+|         |   DR8    |SF12BW500 |   980    |
+|         |   DR9    |SF11BW500 |  1760    |
+|         |   DR10   |SF10BW500 |  3900    |
+|         |   DR11   |SF09BW500 |  7000    |
+|         |   DR12   |SF08BW500 | 12500    |
+|         |   DR13   |SF07BW500 | 21900    |
+|         | DR14:DR15| Not Used |          |
+|         |----------|----------|----------|
+|
+|
 -----------------------------------------------------------------------------------*/
 int8_t AltoviewMDot::setDataRate(uint8_t txdr) {
   int8_t ansCode;
-  char temp[2]; 								//temp char array to store txdr range of 0-13
+  char temp[2];                 //temp char array to store txdr range of 0-13
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
 
-  // sprintf_P(_command,(char*)F("AT+TXDR=DR")); 	//_command = {'A','T','+','T','X','D','R','=','D','R','X','Y','\0'}
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[14])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
-  sprintf(temp, "%u",txdr);						//convert txdr to temp char array
+  // sprintf_P(_command,(char*)F("AT+TXDR=DR"));  //_command = {'A','T','+','T','X','D','R','=','D','R','X','Y','\0'}
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[14])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+  sprintf(temp, "%u", txdr);          //convert txdr to temp char array
 
-  strcat(_command,temp);						//concatenate _command with temp
+  strcat(_command, temp);           //concatenate _command with temp
   _command[12] = '\0';
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000);
 
   if (ansCode == 1) {
     dataRate = txdr;
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -1029,27 +1062,27 @@ int8_t AltoviewMDot::setDataRate(uint8_t txdr) {
 int8_t AltoviewMDot::getDataRate() {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char* r;
   char temp[2];
 
   // sprintf_P(_command,(char*)F("AT+TXDR?"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[15])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[15])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000, &r);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
 
   if (ansCode == 1) {
-  	temp[0] = r[2];						//get first char from response
-  	if (r[3] != ' '){					//if next character is not white space --> response can be ("DRX - SFXXBWXXX" | "DRXX - SFXXBWXXX")
-  		temp[1] = r[3];					//store third character of response to temp char array 
-  	}
-    dataRate = (uint8_t)atoi(temp);		//convert char* to uint8_t 
+    temp[0] = r[2];           //get first char from response
+    if (r[3] != ' ') {        //if next character is not white space --> response can be ("DRX - SFXXBWXXX" | "DRXX - SFXXBWXXX")
+      temp[1] = r[3];         //store third character of response to temp char array
+    }
+    dataRate = (uint8_t)atoi(temp);   //convert char* to uint8_t
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -1063,23 +1096,23 @@ int8_t AltoviewMDot::getDataRate() {
 int8_t AltoviewMDot::setAdaptiveDataRate(char adr) {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
 
   // sprintf_P(_command,(char*)F("AT+ADR "));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[16])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[16])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
   _command[7] = adr;
   _command[8] = '\0';
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000);
 
   if (ansCode == 1) {
     adaptiveDataRate = adr;
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -1088,22 +1121,22 @@ int8_t AltoviewMDot::setAdaptiveDataRate(char adr) {
 int8_t AltoviewMDot::getAdaptiveDataRate() {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char* r;
 
   // sprintf_P(_command,(char*)F("AT+ADR?"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[17])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[17])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000, &r);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
 
   if (ansCode == 1) {
     adaptiveDataRate = r[0];
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -1112,23 +1145,23 @@ int8_t AltoviewMDot::getAdaptiveDataRate() {
 int8_t AltoviewMDot::getDeviceId() {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char* r;
 
   // sprintf_P(_command,(char*)F("AT+DI?"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[18])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[18])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000, &r);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
 
   if (ansCode == 1) {
-    strncpy(deviceId,r,(sizeof(deviceId)-1));
-    deviceId[(sizeof(deviceId)-1)] = '\0';
+    strncpy(deviceId, r, (sizeof(deviceId) - 1));
+    deviceId[(sizeof(deviceId) - 1)] = '\0';
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -1137,23 +1170,23 @@ int8_t AltoviewMDot::getDeviceId() {
 int8_t AltoviewMDot::getNetworkAddress() {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char* r;
 
   // sprintf_P(_command,(char*)F("AT+NA?"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[19])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[19])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000, &r);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
 
   if (ansCode == 1) {
-    strncpy(networkAddress,r,(sizeof(networkAddress)-1));
-    networkAddress[(sizeof(networkAddress)-1)] = '\0';
+    strncpy(networkAddress, r, (sizeof(networkAddress) - 1));
+    networkAddress[(sizeof(networkAddress) - 1)] = '\0';
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -1162,26 +1195,26 @@ int8_t AltoviewMDot::getNetworkAddress() {
 int8_t AltoviewMDot::getNetworkSessionKey() {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char answerX[5];
-  memset(answerX,0x00,sizeof(answerX));
+  memset(answerX, 0x00, sizeof(answerX));
   char* r;
 
   // sprintf_P(_command,(char*)F("AT+NSK?"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[20])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
-  sprintf_P(answerX,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[1]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[20])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+  sprintf_P(answerX, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[1])));
 
-  ansCode = _sendCommand(_command, answer1, answerX,10000, &r);
+  ansCode = _sendCommand(_command, answer1, answerX, 10000, &r);
 
   if (ansCode == 1) {
-    strncpy(networkSessionKey,r,(sizeof(networkSessionKey)-1));
-    networkSessionKey[(sizeof(networkSessionKey)-1)] = '\0';
+    strncpy(networkSessionKey, r, (sizeof(networkSessionKey) - 1));
+    networkSessionKey[(sizeof(networkSessionKey) - 1)] = '\0';
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -1190,26 +1223,26 @@ int8_t AltoviewMDot::getNetworkSessionKey() {
 int8_t AltoviewMDot::getDataSessionKey() {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
   char answerX[5];
-  memset(answerX,0x00,sizeof(answerX));
+  memset(answerX, 0x00, sizeof(answerX));
   char* r;
 
   // sprintf_P(_command,(char*)F("AT+DSK?"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[21])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
-  sprintf_P(answerX,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[1]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[21])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+  sprintf_P(answerX, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[1])));
 
-  ansCode = _sendCommand(_command, answer1, answerX,10000, &r);
+  ansCode = _sendCommand(_command, answer1, answerX, 10000, &r);
 
   if (ansCode == 1) {
-    strncpy(dataSessionKey,r,(sizeof(dataSessionKey)-1));
-    dataSessionKey[(sizeof(dataSessionKey)-1)] = '\0';
+    strncpy(dataSessionKey, r, (sizeof(dataSessionKey) - 1));
+    dataSessionKey[(sizeof(dataSessionKey) - 1)] = '\0';
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -1218,18 +1251,18 @@ int8_t AltoviewMDot::getDataSessionKey() {
 int8_t AltoviewMDot::commitSettings() {
   int8_t ansCode;
   char answer1[5];
-  memset(_command,0x00,sizeof(_command));
-  memset(answer1,0x00,sizeof(answer1));
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
 
   // sprintf_P(_command,(char*)F("AT&W"));
-  sprintf_P(_command,(char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[22])));
-  sprintf_P(answer1,(char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0]))); 
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[22])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
-  ansCode = _sendCommand(_command, answer1,NULL,10000);
+  ansCode = _sendCommand(_command, answer1, NULL, 10000);
 
   if (ansCode == 1) {
     return (0);
   }
 
-  return(-1);
+  return (-1);
 }
