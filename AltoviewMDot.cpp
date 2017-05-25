@@ -17,7 +17,7 @@
  ***********************************************************************************/
 #include "AltoviewMDot.h"
 
-#define DEBUG
+//#define DEBUG                                 // uncomment to print debug information
 
 const char command_00[]  PROGMEM = "AT+FSB ";
 const char command_01[]  PROGMEM = "AT+PN ";
@@ -92,6 +92,16 @@ const char* const table_LoRaWAN_KEYS[] PROGMEM=
 /************************************************************************************
  *                               PUBLIC FUNCTIONS                                   *
  ***********************************************************************************/
+
+ /*----------------------------------------------------------------------------------|
+  | CONSTRUCTOR: Creates class object using a specified serial port.                 |                             |
+  -----------------------------------------------------------------------------------*/
+  AltoviewMDot::AltoviewMDot(AltSoftSerial* mdot_serial) {
+    //TODO: Input checking, what range of values to accept, how to handle invalid input
+    //_u8SerialPort = mdot_serial;       //legacy 
+    _mdot_serial = mdot_serial; 
+  }
+
 
 	/*----------------------------------------------------------------------------------|
 	| CONSTRUCTOR: Creates class object using a specified serial port, and passing it a |
@@ -168,60 +178,63 @@ int8_t AltoviewMDot::_sendCommand(char* command, char* ans1, char* ans2, uint16_
   while (_mdot_serial->read() != -1);
   delay(20);                                     				//Undesirable delay, if we read/write too quick to the mDot,  timing issues arise.
 
-  memset(_response,0x00,_MAX_MDOT_RESPONSE);					//Blank string
-  _length = 0;
+  memset(_response,0x00,_MAX_MDOT_RESPONSE);					  //Blank string
+  _length = 0;                                          //_length = length of response 
 
 #ifdef DEBUG
   //Send command
-  _debug_serial->print(F("LaT:sc: "));
+  _debug_serial->println();
+  _debug_serial->print(F("LaT:sc:command: "));
   _debug_serial->print(command);
   _debug_serial->print(TERMINATOR);
 #endif
-
-  // _mdot_serial->flush();
   
   _mdot_serial->print(command);
   _mdot_serial->print(TERMINATOR);
 
-  // _mdot_serial->flush() ;
-
-  maxEndTime = millis() + timeout;								//Set timeout time
+  maxEndTime = millis() + timeout;								      //Set timeout time (timeout is passed as arg to this fnc)
 
   //While something is available get it
-  ///_debug_serial->println(F("LaT:sc: Loop collecting response"));
+  //_debug_serial->println(F("LaT:sc: Loop collecting response"));
   *resp = NULL;
 
-  int availableCount = 0;
-  int tempRet = -1;
+  int availableCount = 0;                               // availableCount = number of available bytes to read from mDot
+  int tempRet = -1;                                     //tempRet = 
   do {
     availableCount = _mdot_serial->available();
-    if (availableCount != 0) {							//available() is a method of the serial class showing number of available bytes to read. 
-      // _debug_serial->print("[");
-      // _debug_serial->print(availableCount);
-      // _debug_serial->print("]");
-      if (_length < (_MAX_MDOT_RESPONSE - 2)) {
+    if (availableCount != 0) {							            //available() is a method of the serial class showing number of available bytes to read. 
+      //_debug_serial->print("[");
+      //_debug_serial->print(availableCount);
+      //_debug_serial->print("]");
+      if (_length < (_MAX_MDOT_RESPONSE - 2)) {         //if length of response is smaller than the (maximum allowed response - 2)
         _response[_length++] = _mdot_serial->read();
-        // _debug_serial->write(_response[_length - 1]);
-        // _debug_serial->println();
-        _response[_length] = '\0';               				//Ensure response buffer is null terminated
+        //_debug_serial->write(_response[_length-1]);
+        //_debug_serial->println();
+        _response[_length] = '\0';               				//Ensure response buffer is null terminated (nb: this is overwritten in the next loop if there is still something available on the buffer)
       }
 
       if (ans1 != NULL && strstr(_response, ans1) != '\0') {
-        tempRet = 1;
+        tempRet = 1;                                    //if ans1 is found, break from the loop collecting the response
         break;
       }
 
       if (ans2 != NULL && strstr(_response, ans2) != '\0') {
-        tempRet = 2;
+        tempRet = 2;                                    //if ans2 is found, break from the loop collecting the response
         break;
       }
-
     }
   } while (millis() <= maxEndTime);
 
+  #ifdef DEBUG
+    _debug_serial->println();
+    _debug_serial->print(F("LaT:sc:_response: "));
+    _debug_serial->println(_response);
+    
+    //_debug_serial->print(F("LaT:sc: length: "));
+    //_debug_serial->println(_length);
+  #endif
+
   if (resp != NULL && tempRet != -1) {
-    //_debug_serial->print(F("LaT:sc: "));
-    //_debug_serial->println(_response);
     *resp = strstr(_response,command);
     *resp += strlen(command);
     *resp += sizeof(TERMINATOR);
@@ -229,7 +242,9 @@ int8_t AltoviewMDot::_sendCommand(char* command, char* ans1, char* ans2, uint16_
 
   if (tempRet == -1)
   {
-    _debug_serial->println(F("LaT:sc: Timed out"));
+    #ifdef DEBUG
+      _debug_serial->println(F("LaT:sc: Timed out"));
+    #endif
   }
   
   return (tempRet);

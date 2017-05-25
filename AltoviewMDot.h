@@ -56,9 +56,9 @@ class AltoviewMDot
     float snr = '\0';                             //-00.0 (-20dbm to 20dbm) --> float range: -3.4E38 .. 3.4E38
     int16_t rssi = '\0';                          //-000 (-180dbm to 0dbm) --> int16_t range: -32,768 to 32,767
 
-    AltoviewMDot();                                     //Use default serial port
-    AltoviewMDot(uint8_t);                              //Use specified serial port.
-    AltoviewMDot(AltSoftSerial*, HardwareSerial*);                      //Use specified serial port and a debugging stream.
+    AltoviewMDot();                               //Use default serial port
+    AltoviewMDot(AltSoftSerial*);                 //Use specified serial port
+    AltoviewMDot(AltSoftSerial*, HardwareSerial*);//Use specified serial port and a debugging stream.
 
     void begin();                                 //Use default baud
     void begin(uint32_t);                         //Use specified baud rate.
@@ -104,7 +104,7 @@ class AltoviewMDot
     uint8_t _txPutter = 0;                        //Number of fragments in buffer. TODO: Replace/rename
 
     char _response[_MAX_MDOT_RESPONSE];           //mDot response buffer
-    uint8_t _length;                              //Lenght of a response
+    uint8_t _length;                              //Length of a response
 
     char _command[_MAX_MDOT_COMMAND];
 
