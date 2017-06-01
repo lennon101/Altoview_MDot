@@ -223,10 +223,10 @@ int8_t AltoviewMDot::_sendCommand(char* command, char* ans1, char* ans2, uint16_
         break;
       }
     }
+  //_debug_serial->print(F("."));
   } while (millis() <= maxEndTime);
 
 #ifdef DEBUG
-  _debug_serial->println();
   _debug_serial->print(F("LaT:sc:_response: "));
   _debug_serial->println(_response);
 
