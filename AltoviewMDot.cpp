@@ -17,7 +17,8 @@
  ***********************************************************************************/
 #include "AltoviewMDot.h"
 
-#define DEBUG                                 // uncomment to print debug information
+//#define DEBUG                                 // uncomment to print ALL debug info and responses from mDot
+#define DEBUG2                                // uncomment to print only print timed out and commands
 
 const char command_00[]  PROGMEM = "AT+FSB ";
 const char command_01[]  PROGMEM = "AT+PN ";
@@ -181,7 +182,7 @@ int8_t AltoviewMDot::_sendCommand(char* command, char* ans1, char* ans2, uint16_
   memset(_response, 0x00, _MAX_MDOT_RESPONSE);          //Blank string
   _length = 0;                                          //_length = length of response
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(DEBUG2)
   //Send command
   _debug_serial->println();
   _debug_serial->print(F("LaT:sc:command: "));
@@ -242,7 +243,7 @@ int8_t AltoviewMDot::_sendCommand(char* command, char* ans1, char* ans2, uint16_
 
   if (tempRet == -1)
   {
-#ifdef DEBUG
+#if defined(DEBUG) || defined(DEBUG2)
     _debug_serial->println(F("LaT:sc: Timed out"));
 #endif
   }
@@ -708,30 +709,19 @@ int8_t AltoviewMDot::_processBuffer() {
 | the Campbell Scientific Australia LoRaWAN server.                                 |
 -----------------------------------------------------------------------------------*/
 int8_t AltoviewMDot::setDefaults() {
-  int8_t result = -1;
+  int8_t result = 0;
   char id[sizeof(key_NetworkId)];
   char key[sizeof(key_NetworkKey)];
   sprintf_P(id, (char*)pgm_read_word(&(table_LoRaWAN_KEYS[0])));
   sprintf_P(key, (char*)pgm_read_word(&(table_LoRaWAN_KEYS[1])));
 
-  if (setFrequencySubBand('1') == 0) {
-    result = 0;
-  }
-  if (setPublicNetwork('1') == 0) {
-    result = 0;
-  }
-  if (setNetworkID(id) == 0) {
-    result = 0;
-  }
-  if (setNetworkKey(key) == 0) {
-    result = 0;
-  }
-  if (setDataRate((uint8_t)2) == 0) {
-    result = 0;
-  }
-  if (setAdaptiveDataRate('0') == 0) {
-    result = 0;
-  }
+  // If any of the functions fail a -1 is returned and summed with result. 
+  result += setFrequencySubBand('1'); 
+  result += setPublicNetwork('1');
+  result += setNetworkID(id);
+  result += setNetworkKey(key);
+  result += setDataRate((uint8_t)2);
+  result += setAdaptiveDataRate('0');
 
   commitSettings();
 
