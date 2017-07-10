@@ -18,7 +18,7 @@
 #include "AltoviewMDot.h"
 
 //#define DEBUG                                 // uncomment to print ALL debug info and responses from mDot
-#define DEBUG2                                // uncomment to print only print timed out and commands
+//#define DEBUG2                                // uncomment to print only print timed out and commands
 
 const char command_00[]  PROGMEM = "AT+FSB ";
 const char command_01[]  PROGMEM = "AT+PN ";
@@ -374,7 +374,6 @@ int8_t AltoviewMDot::getSnr() {
   memset(_command, 0x00, sizeof(_command));
   memset(answer1, 0x00, sizeof(answer1));
   char* r;
-  char temp[5];                 //variable to store potential length snr of latest packet
 
   // sprintf_P(_command,(char*)F("AT+SNR"));
   sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[7])));
@@ -383,8 +382,14 @@ int8_t AltoviewMDot::getSnr() {
 
   if (ansCode == 1) {
     //strncpy(snr,r,(sizeof(snr)-1));
-    sprintf(temp, "%.5s", r);         //get the first 5 values from the response array
-    snr = (float)atof(temp);          //use atoi to cast char array to uint16 and strip ' ' or ','
+    //sprintf(temp, "%.5s", r);         //get the first 5 values from the response array
+    //snr = (float)atof(temp);          //use atof to cast char array to uint16 and strip ' ' or ','
+    uint8_t i = 0; 
+    while(r[i] != ',') {
+        snr[i] = r[i];
+        ++i;  
+    }
+    snr[i] = '\0';
     return (0);
   }
 

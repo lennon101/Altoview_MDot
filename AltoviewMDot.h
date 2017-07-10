@@ -53,7 +53,7 @@ class AltoviewMDot
     char publicNetwork = '\0';                    //0,1
     uint8_t dataRate = '\0';                      //0-3
     char adaptiveDataRate = '\0';                 //0,1
-    float snr = '\0';                             //-00.0 (-20dbm to 20dbm) --> float range: -3.4E38 .. 3.4E38
+    char snr[6] = {'\0'};                             //-00.0 (-20dbm to 20dbm) --> float range: -3.4E38 .. 3.4E38
     int16_t rssi = '\0';                          //-000 (-180dbm to 0dbm) --> int16_t range: -32,768 to 32,767
 
     AltoviewMDot();                               //Use default serial port
