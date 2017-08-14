@@ -17,7 +17,7 @@
  ***********************************************************************************/
 #include "AltoviewMDot.h"
 
-//#define DEBUG                                 // uncomment to print ALL debug info and responses from mDot
+#define DEBUG                                 // uncomment to print ALL debug info and responses from mDot
 //#define DEBUG2                                // uncomment to print only print timed out and commands
 
 const char command_00[]  PROGMEM = "AT+FSB ";
@@ -43,6 +43,7 @@ const char command_19[]  PROGMEM = "AT+NA?";
 const char command_20[]  PROGMEM = "AT+NSK?";
 const char command_21[]  PROGMEM = "AT+DSK?";
 const char command_22[]  PROGMEM = "AT&W";
+const char command_23[]  PROGMEM = "AT+WM=1";   // Configures the MDOT to wake from sleep mode on an interrupt
 
 const char* const table_LoRaWAN_COMMANDS[] PROGMEM =
 {
@@ -68,7 +69,8 @@ const char* const table_LoRaWAN_COMMANDS[] PROGMEM =
   command_19,
   command_20,
   command_21,
-  command_22
+  command_22,
+  command_23
 };
 
 const char answer_00[] PROGMEM = "OK";
@@ -447,6 +449,33 @@ int8_t AltoviewMDot::sleep() {
   return (-1);
 }
 
+/*----------------------------------------------------------------------------------|
+| Sets the frequency sub band                                                       |
+|                                                                                   |
+| AT+FSB ?                                                                          |
+| AT+FSB: (0-8)                                                                     |
+-----------------------------------------------------------------------------------*/
+int8_t AltoviewMDot::setWakeOnInterrupt() {
+#ifdef DEBUG
+  _debug_serial->println(F("LaT:setWakeOnInterrupt()"));
+#endif
+  char* r;                                                                        //r=entire response collected from mdot
+  int8_t ansCode;
+  char answer1[5];                                                                // Potential size of answer is 5 chars
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
+
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[23])));        // AT+WM=1 --> wake MDOT on interrupt 
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
+  commitSettings();
+  if (ansCode == 1) {
+    return (0);
+  }
+  return (-1);
+}
+
 
 /*----------------------------------------------------------------------------------|
 | Receives a string in the format key:value,key:value,...                           |
@@ -755,7 +784,9 @@ int8_t AltoviewMDot::setFrequencySubBand(char fsb) {
   _command[8] = '\0';
 
   ansCode = _sendCommand(_command, answer1, NULL, 10000);
-  ///_debug_serial->println(_response);
+  #ifdef DEBUG
+    _debug_serial->println(_response);
+  #endif
 
   if (ansCode == 1) {
     frequencySubBand = fsb;
