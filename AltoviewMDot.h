@@ -3,7 +3,7 @@
 
   Version: v0.2.4
 
-  Brief: Arduino library for controlling Multitech mDot LoRa modules using
+  Brief: Arduino library for controlling Multitech MDOT LoRa modules using
          AT commands.
 
   Copyright: This library is published under GNU AGPLv3 license.
@@ -33,8 +33,8 @@
 #define _HEADER_OFFSET 48         //ASCII offest to start at char = '0'
 
 #define _MAX_PAIRS_SIZE 70
-#define _MAX_MDOT_RESPONSE 140    //Max number of bytes the mdot might return
-#define _MAX_MDOT_COMMAND 60     //TODO: Check against the manual for mDot
+#define _MAX_MDOT_RESPONSE 140    //Max number of bytes the MDOT might return
+#define _MAX_MDOT_COMMAND 60     //TODO: Check against the manual for MDOT
 
 
 /*
@@ -76,8 +76,9 @@ class AltoviewMDot
     int8_t ping();                                //Uses getSnr() and getRssi(), returns 0 if variables saved, returns -1 if either fncs failed 
     int8_t getSnr();                              //Gets SNR using AT command, returns 0 if variable saved, returns -1 if failed 
     int8_t getRssi();                             //Gets RSSI using AT command, returns 0 if variable saved, returns -1 if failed 
-    int8_t sleep();                               //Sleeps the mDot to deep-sleep mode
-    int8_t setWakeOnInterrupt(); 
+    int8_t sleep();                               //Sleeps the MDOT to deep-sleep mode
+    int8_t setWakeOnInterrupt();                  //Set the MDOT sleep mode to wake on interrupt 
+    int8_t testMdot();                            //Send AT to the MDOT to test if TX/RX comms are working 
 
     int8_t setDefaults();
     int8_t setFrequencySubBand(char);
@@ -105,7 +106,7 @@ class AltoviewMDot
     char _txBuffer[_MAX_FRAGMENTS][_PACKET_SIZE];
     uint8_t _txPutter = 0;                        //Number of fragments in buffer. TODO: Replace/rename
 
-    char _response[_MAX_MDOT_RESPONSE];           //mDot response buffer
+    char _response[_MAX_MDOT_RESPONSE];           //MDOT response buffer
     uint8_t _length;                              //Length of a response
 
     char _command[_MAX_MDOT_COMMAND];

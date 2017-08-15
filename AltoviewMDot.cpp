@@ -44,6 +44,7 @@ const char command_20[]  PROGMEM = "AT+NSK?";
 const char command_21[]  PROGMEM = "AT+DSK?";
 const char command_22[]  PROGMEM = "AT&W";
 const char command_23[]  PROGMEM = "AT+WM=1";   // Configures the MDOT to wake from sleep mode on an interrupt
+const char command_24[]  PROGMEM = "AT";        // used to see if MDOT is communicating with cpu 
 
 const char* const table_LoRaWAN_COMMANDS[] PROGMEM =
 {
@@ -70,7 +71,8 @@ const char* const table_LoRaWAN_COMMANDS[] PROGMEM =
   command_20,
   command_21,
   command_22,
-  command_23
+  command_23,
+  command_24
 };
 
 const char answer_00[] PROGMEM = "OK";
@@ -450,10 +452,12 @@ int8_t AltoviewMDot::sleep() {
 }
 
 /*----------------------------------------------------------------------------------|
-| Sets the frequency sub band                                                       |
+| Set the MDOT to wake on interrupt                                                 |
 |                                                                                   |
-| AT+FSB ?                                                                          |
-| AT+FSB: (0-8)                                                                     |
+| AT+WM?                                                                            |
+| AT+FSB:                                                                           |
+|    - 0: wake on interval                                                          |
+|    - 1: wake on interrupt                                                         |
 -----------------------------------------------------------------------------------*/
 int8_t AltoviewMDot::setWakeOnInterrupt() {
 #ifdef DEBUG
@@ -470,6 +474,31 @@ int8_t AltoviewMDot::setWakeOnInterrupt() {
 
   ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
   commitSettings();
+  if (ansCode == 1) {
+    return (0);
+  }
+  return (-1);
+}
+
+/*----------------------------------------------------------------------------------|
+| Test if the MDOT is communicating with CPU                                        |
+|                                                                                   |
+| AT                                                                                |
+-----------------------------------------------------------------------------------*/
+int8_t AltoviewMDot::testMdot() {
+#ifdef DEBUG
+  _debug_serial->println(F("LaT:testMdot()"));
+#endif
+  char* r;                                                                        //r=entire response collected from mdot
+  int8_t ansCode;
+  char answer1[5];                                                                // Potential size of answer is 5 chars
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
+
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[24])));        // AT+WM=1 --> wake MDOT on interrupt 
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+
+  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
   if (ansCode == 1) {
     return (0);
   }
@@ -785,7 +814,7 @@ int8_t AltoviewMDot::setFrequencySubBand(char fsb) {
 
   ansCode = _sendCommand(_command, answer1, NULL, 10000);
   #ifdef DEBUG
-    _debug_serial->println(_response);
+    //_debug_serial->println(_response);
   #endif
 
   if (ansCode == 1) {
@@ -837,7 +866,7 @@ int8_t AltoviewMDot::setPublicNetwork(char pn) {
   // sprintf_P(_command,(char*)F("AT+PN "));
   sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[1])));
   sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
-  if (pn != '0') {
+  if (pn != '0') {                                                              // Force pn to be boolean
     pn = '1';
   }
   _command[6] = pn;
@@ -1100,11 +1129,17 @@ int8_t AltoviewMDot::getDataRate() {
   ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
 
   if (ansCode == 1) {
-    temp[0] = r[2];           //get first char from response
-    if (r[3] != ' ') {        //if next character is not white space --> response can be ("DRX - SFXXBWXXX" | "DRXX - SFXXBWXXX")
-      temp[1] = r[3];         //store third character of response to temp char array
-    }
-    dataRate = (uint8_t)atoi(temp);   //convert char* to uint8_t
+    temp[0] = r[2];             //get first number from response
+    temp[1] = r[3];             // get second char from response (atoi() requires a string longer than a single char) 
+    //if (r[3] != ' ') {        //if next character is not white space --> response can be ("DRX - SFXXBWXXX" | "DRXX - SFXXBWXXX")
+    //  temp[1] = r[3];         //store third character of response to temp char array
+    //}
+    dataRate = atoi(temp);   //convert char* to uint8_t
+
+    #ifdef DEBUG
+      _debug_serial->print("dataRate: ");
+      _debug_serial->println(dataRate); 
+    #endif
     return (0);
   }
 
