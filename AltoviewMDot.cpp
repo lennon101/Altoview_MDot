@@ -45,6 +45,7 @@ const char command_21[]  PROGMEM = "AT+DSK?";
 const char command_22[]  PROGMEM = "AT&W";
 const char command_23[]  PROGMEM = "AT+WM=1";   // Configures the MDOT to wake from sleep mode on an interrupt
 const char command_24[]  PROGMEM = "AT";        // used to see if MDOT is communicating with cpu 
+const char command_25[]  PROGMEM = "AT+TXP ";
 
 const char* const table_LoRaWAN_COMMANDS[] PROGMEM =
 {
@@ -72,7 +73,8 @@ const char* const table_LoRaWAN_COMMANDS[] PROGMEM =
   command_21,
   command_22,
   command_23,
-  command_24
+  command_24,
+  command_25
 };
 
 const char answer_00[] PROGMEM = "OK";
@@ -498,7 +500,7 @@ int8_t AltoviewMDot::testMdot() {
   sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[24])));        // AT+WM=1 --> wake MDOT on interrupt 
   sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
 
-  ansCode = _sendCommand(_command, answer1, NULL, 10000, &r);
+  ansCode = _sendCommand(_command, answer1, NULL, 1000, &r);
   if (ansCode == 1) {
     return (0);
   }
@@ -778,17 +780,46 @@ int8_t AltoviewMDot::setDefaults() {
   sprintf_P(id, (char*)pgm_read_word(&(table_LoRaWAN_KEYS[0])));
   sprintf_P(key, (char*)pgm_read_word(&(table_LoRaWAN_KEYS[1])));
 
-  // If any of the functions fail a -1 is returned and summed with result. 
+  // If any of the functions fail a -1 is returned and summed with result 
+  //    otherwise they return 0. 
   result += setFrequencySubBand('1'); 
   result += setPublicNetwork('1');
   result += setNetworkID(id);
   result += setNetworkKey(key);
   result += setDataRate((uint8_t)2);
   result += setAdaptiveDataRate('0');
+  result += setTxPower("20");           //always pad this with zeros if it is smaller than 10 (ie 5 becomes 05)
 
   commitSettings();
 
   return (result);
+}
+
+/*----------------------------------------------------------------------------------|
+| Sets the TX Power                                                                 |
+|                                                                                   |
+| AT+TXP ?                                                                          |
+| AT+FSB: (0-20)                                                                    |
+-----------------------------------------------------------------------------------*/
+int8_t AltoviewMDot::setTxPower(char* txp) {
+  int8_t ansCode;
+  char answer1[5];
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
+
+  // sprintf_P(_command,(char*)F("AT+NI 0,"));
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[25])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+  strcat(_command, txp);                          //Append ID to command
+
+  ansCode = _sendCommand(_command, answer1, NULL, 10000);
+
+  if (ansCode == 1) {
+    txPower = txp;
+    return (0);
+  }
+
+  return (-1);
 }
 
 /*----------------------------------------------------------------------------------|
@@ -914,7 +945,7 @@ int8_t AltoviewMDot::getPublicNetwork() {
 |                                                                                   |
 | Examples:                                                                         |
 |  * AT+NI 0,00:00:aa:00:00:00:00:01                                                |
-|  * AT+NI 0,00-00-aa-00-00-00-00-01                                                |
+|  * AT+NI 0,00-00-aa-00-00-00-000-1                                                |
 -----------------------------------------------------------------------------------*/
 int8_t AltoviewMDot::setNetworkID(char* id) {
   int8_t ansCode;

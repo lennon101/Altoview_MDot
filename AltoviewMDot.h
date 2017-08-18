@@ -51,6 +51,7 @@ class AltoviewMDot
     char networkAddress[12] = {'\0'};             //00:00:00:00
     char frequencySubBand = '\0';                 //0-8
     char publicNetwork = '\0';                    //0,1
+    char txPower = '\0';                          //0-20
     uint8_t dataRate = '\0';                      //0-3
     char adaptiveDataRate = '\0';                 //0,1
     char snr[6] = {'\0'};                             //-00.0 (-20dbm to 20dbm) --> float range: -3.4E38 .. 3.4E38
@@ -81,6 +82,7 @@ class AltoviewMDot
     int8_t testMdot();                            //Send AT to the MDOT to test if TX/RX comms are working 
 
     int8_t setDefaults();
+    int8_t setTxPower(char*); 
     int8_t setFrequencySubBand(char);
     int8_t getFrequencySubBand();
     int8_t setPublicNetwork(char);
