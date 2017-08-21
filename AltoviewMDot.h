@@ -61,8 +61,8 @@ class AltoviewMDot
     AltoviewMDot(AltSoftSerial*);                 //Use specified serial port
     AltoviewMDot(AltSoftSerial*, HardwareSerial*);//Use specified serial port and a debugging stream.
 
-    void begin();                                 //Use default baud
-    void begin(uint32_t);                         //Use specified baud rate.
+    int8_t begin();                                 //Use default baud
+    int8_t begin(uint32_t);                         //Use specified baud rate.
 
     int8_t join();                                //Join a LoRa network.
     int8_t join(uint16_t);                        //Join with a specific timeout
@@ -80,6 +80,7 @@ class AltoviewMDot
     int8_t sleep();                               //Sleeps the MDOT to deep-sleep mode
     int8_t setWakeOnInterrupt();                  //Set the MDOT sleep mode to wake on interrupt 
     int8_t testMdot();                            //Send AT to the MDOT to test if TX/RX comms are working 
+    int8_t setAck(char);
 
     int8_t setDefaults();
     int8_t setTxPower(char*); 

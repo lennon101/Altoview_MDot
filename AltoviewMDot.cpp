@@ -45,7 +45,8 @@ const char command_21[]  PROGMEM = "AT+DSK?";
 const char command_22[]  PROGMEM = "AT&W";
 const char command_23[]  PROGMEM = "AT+WM=1";   // Configures the MDOT to wake from sleep mode on an interrupt
 const char command_24[]  PROGMEM = "AT";        // used to see if MDOT is communicating with cpu 
-const char command_25[]  PROGMEM = "AT+TXP ";
+const char command_25[]  PROGMEM = "AT+TXP ";   // Transmit Power
+const char command_26[]  PROGMEM = "AT+ACK ";   // Require an ack after AT+SEND [0 -> ACKs are not required. (Default); 1-8 -> The maximum number of attempts without an acknowledgment.] 
 
 const char* const table_LoRaWAN_COMMANDS[] PROGMEM =
 {
@@ -74,7 +75,8 @@ const char* const table_LoRaWAN_COMMANDS[] PROGMEM =
   command_22,
   command_23,
   command_24,
-  command_25
+  command_25,
+  command_26
 };
 
 const char answer_00[] PROGMEM = "OK";
@@ -131,8 +133,8 @@ AltoviewMDot::AltoviewMDot(AltSoftSerial* mdot_serial, HardwareSerial* debug_ser
 |                                                                                   |
 | Call once class has been instantiated, typically within setup().                  |
 -----------------------------------------------------------------------------------*/
-void AltoviewMDot::begin() {
-  setDefaults();
+int8_t AltoviewMDot::begin() {
+  return setDefaults();
 }
 
 /*----------------------------------------------------------------------------------|
@@ -1225,6 +1227,40 @@ int8_t AltoviewMDot::getAdaptiveDataRate() {
 
   if (ansCode == 1) {
     adaptiveDataRate = r[0];
+    return (0);
+  }
+
+  return (-1);
+}
+
+/*----------------------------------------------------------------------------------|
+| Sets requirement for the acknowledgement from the GW                              |
+|                                                                                   |
+| AT+ACK ?                                                                          |
+| AT+FSB: (0-8)                                                                     |
+-----------------------------------------------------------------------------------*/
+int8_t AltoviewMDot::setAck(char p) {
+  int8_t ansCode;
+  char answer1[5];
+  memset(_command, 0x00, sizeof(_command));
+  memset(answer1, 0x00, sizeof(answer1));
+
+
+  // sprintf_P(_command,(char*)F("AT+FSB "));
+  sprintf_P(_command, (char*)pgm_read_word(&(table_LoRaWAN_COMMANDS[26])));
+  sprintf_P(answer1, (char*)pgm_read_word(&(table_LoRaWAN_ANSWERS[0])));
+
+
+  _command[7] = p;
+  _command[8] = '\0';
+
+  ansCode = _sendCommand(_command, answer1, NULL, 10000);
+  #ifdef DEBUG
+    //_debug_serial->println(_response);
+  #endif
+
+  commitSettings();
+  if (ansCode == 1) {
     return (0);
   }
 
